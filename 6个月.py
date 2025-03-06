@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 import streamlit as st
 
@@ -11,7 +12,36 @@ X = train_data[['Age', 'Sex', 'Race', 'Hisogical.Type',
                 'Chemotherapy', 'Marital.status']]
 y = train_data['Vital.status']
 
-# 创建并训练Random Forest模型
+# 处理缺失值和无穷大值
+# 检查 X 中是否存在缺失值
+if X.isnull().any().any():
+    X = X.dropna()
+    y = y[X.index]
+
+# 检查 y 中是否存在缺失值
+if y.isnull().any():
+    y = y.dropna()
+    X = X[y.index]
+
+# 检查 X 中是否存在无穷大的值
+if np.isinf(X).any().any():
+    X = X.replace([np.inf, -np.inf], np.nan)
+    X = X.dropna()
+    y = y[X.index]
+
+# 检查 y 中是否存在无穷大的值
+if np.isinf(y).any():
+    y = y.replace([np.inf, -np.inf], np.nan)
+    y = y.dropna()
+    X = X[y.index]
+
+# 检查数据类型
+print(X.dtypes)
+X = X.astype('float64')
+print(y.dtypes)
+y = y.astype('float64')
+
+# 创建并训练 Random Forest 模型
 rf_params = {
     'n_estimators': 200,
     'min_samples_split': 10,
@@ -25,7 +55,6 @@ class_mapping = {0: "Alive", 1: "Dead"}
 Age_mapper = {'＜60': 1, '60-73': 2, '＞73': 3}
 Sex_mapper = {'male': 1, 'female': 2}
 Race_mapper = {"White": 1, "Black": 2, "Other": 3}
-# 修改变量名
 Hisogical_Type_mapper = {"Adenocarcinoma": 1, "Squamous-cell carcinoma": 2}
 T_mapper = {"T4": 4, "T1": 1, "T2": 2, "T3": 3}
 Liver_metastasis_mapper = {"NO": 1, "Yes": 2}
@@ -37,7 +66,6 @@ Marital_status_mapper = {"Married/Partnered": 1, "Unmarried/Unstable Relationshi
 X['Age'] = X['Age'].map(Age_mapper)
 X['Sex'] = X['Sex'].map(Sex_mapper)
 X['Race'] = X['Race'].map(Race_mapper)
-# 修改引用的变量名
 X['Hisogical.Type'] = X['Hisogical.Type'].map(Hisogical_Type_mapper)
 X['T'] = X['T'].map(T_mapper)
 X['Liver.metastasis'] = X['Liver.metastasis'].map(Liver_metastasis_mapper)
@@ -45,7 +73,7 @@ X['Radiation'] = X['Radiation'].map(Radiation_mapper)
 X['Chemotherapy'] = X['Chemotherapy'].map(Chemotherapy_mapper)
 X['Marital.status'] = X['Marital.status'].map(Marital_status_mapper)
 
-# 训练Random Forest模型
+# 训练 Random Forest 模型
 rf_model.fit(X, y)
 
 # 预测函数
@@ -56,7 +84,6 @@ def predict_Vital_status(age, sex, race, histologic_type,
         'Age': [Age_mapper[age]],
         'Sex': [Sex_mapper[sex]],
         'Race': [Race_mapper[race]],
-        # 修改引用的变量名
         'Hisogical.Type': [Hisogical_Type_mapper[histologic_type]],
         'T': [T_mapper[t]],
         'Liver.metastasis': [Liver_metastasis_mapper[liver_metastasis]],
@@ -65,18 +92,17 @@ def predict_Vital_status(age, sex, race, histologic_type,
         'Marital.status': [Marital_status_mapper[marital_status]]
     })
     prediction = rf_model.predict(input_data)[0]
-    probability = rf_model.predict_proba(input_data)[0][1]  # 获取属于类别1的概率
+    probability = rf_model.predict_proba(input_data)[0][1]  # 获取属于类别 1 的概率
     class_label = class_mapping[prediction]
     return class_label, probability
 
-# 创建Web应用程序
-st.title("6-month survival of NSCLC-BM patients based on Random Forest")
+# 创建 Web 应用程序
+st.title("6 - month survival of NSCLC - BM patients based on Random Forest")
 st.sidebar.write("Variables")
 
 age = st.sidebar.selectbox("Age", options=list(Age_mapper.keys()))  # 使用选择框
 sex = st.sidebar.selectbox("Sex", options=list(Sex_mapper.keys()))
 race = st.sidebar.selectbox("Race", options=list(Race_mapper.keys()))
-# 修改引用的变量名
 histologic_type = st.sidebar.selectbox("Histologic Type", options=list(Hisogical_Type_mapper.keys()))
 t = st.sidebar.selectbox("T", options=list(T_mapper.keys()))
 liver_metastasis = st.sidebar.selectbox("Liver metastasis", options=list(Liver_metastasis_mapper.keys()))
@@ -91,4 +117,4 @@ if st.button("Predict"):
     )
 
     st.write("Predicted Vital Status:", prediction)
-    st.write("Probability of 6-month survival is:", probability)
+    st.write("Probability of 6 - month survival is:", 1 - probability)
