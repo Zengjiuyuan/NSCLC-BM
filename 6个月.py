@@ -13,17 +13,21 @@ X = train_data[['Age', 'Sex', 'Race', 'Hisogical.Type',
 y = train_data['Vital.status']
 
 # 处理缺失值和无穷大值
-def handle_non_finite(data):
-    if data.isnull().any().any():
-        data = data.dropna()
-    if np.isinf(data).any().any():
-        data = data.replace([np.inf, -np.inf], np.nan).dropna()
-    return data
+def handle_non_finite(X, y):
+    # 合并 X 和 y 以便同时处理索引
+    combined = pd.concat([X, y], axis=1)
+    # 检查是否存在缺失值
+    if combined.isnull().any().any():
+        combined = combined.dropna()
+    # 检查是否存在无穷大值
+    if np.isinf(combined).any().any():
+        combined = combined.replace([np.inf, -np.inf], np.nan).dropna()
+    # 分离处理后的 X 和 y
+    X = combined.drop('Vital.status', axis=1)
+    y = combined['Vital.status']
+    return X, y
 
-X = handle_non_finite(X)
-y = y[X.index]
-y = handle_non_finite(pd.DataFrame(y))
-X = X[y.index]
+X, y = handle_non_finite(X, y)
 
 # 特征映射
 class_mapping = {0: "Alive", 1: "Dead"}
@@ -49,8 +53,7 @@ X['Chemotherapy'] = X['Chemotherapy'].map(Chemotherapy_mapper)
 X['Marital.status'] = X['Marital.status'].map(Marital_status_mapper)
 
 # 再次处理映射后可能出现的非有限值
-X = handle_non_finite(X)
-y = y[X.index]
+X, y = handle_non_finite(X, y)
 
 # 检查数据类型
 X = X.astype('float64')
