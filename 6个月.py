@@ -25,9 +25,10 @@ class_mapping = {0: "Alive", 1: "Dead"}
 Age_mapper = {'＜60': 1, '60-73': 2, '＞73': 3}
 Sex_mapper = {'male': 1, 'female': 2}
 Race_mapper = {"White": 1, "Black": 2, "Other": 3}
-Hisogical.Type_mapper = {"Adenocarcinoma": 1, "Squamous-cell carcinoma": 2}
+# 修改变量名
+Hisogical_Type_mapper = {"Adenocarcinoma": 1, "Squamous-cell carcinoma": 2}
 T_mapper = {"T4": 4, "T1": 1, "T2": 2, "T3": 3}
-Liver.metastasis_mapper = {"NO": 1, "Yes": 2}
+Liver_metastasis_mapper = {"NO": 1, "Yes": 2}
 Radiation_mapper = {"NO": 1, "Yes": 2}
 Chemotherapy_mapper = {"NO": 1, "Yes": 2}
 Marital_status_mapper = {"Married/Partnered": 1, "Unmarried/Unstable Relationship": 2}
@@ -36,9 +37,10 @@ Marital_status_mapper = {"Married/Partnered": 1, "Unmarried/Unstable Relationshi
 X['Age'] = X['Age'].map(Age_mapper)
 X['Sex'] = X['Sex'].map(Sex_mapper)
 X['Race'] = X['Race'].map(Race_mapper)
-X['Hisogical.Type'] = X['Hisogical.Type'].map(Hisogical.Type_mapper)
+# 修改引用的变量名
+X['Hisogical.Type'] = X['Hisogical.Type'].map(Hisogical_Type_mapper)
 X['T'] = X['T'].map(T_mapper)
-X['Liver.metastasis'] = X['Liver.metastasis'].map(Liver.metastasis_mapper)
+X['Liver.metastasis'] = X['Liver.metastasis'].map(Liver_metastasis_mapper)
 X['Radiation'] = X['Radiation'].map(Radiation_mapper)
 X['Chemotherapy'] = X['Chemotherapy'].map(Chemotherapy_mapper)
 X['Marital.status'] = X['Marital.status'].map(Marital_status_mapper)
@@ -54,9 +56,10 @@ def predict_Vital_status(age, sex, race, histologic_type,
         'Age': [Age_mapper[age]],
         'Sex': [Sex_mapper[sex]],
         'Race': [Race_mapper[race]],
-        'Hisogical.Type': [Hisogical.Type_mapper[histologic_type]],
+        # 修改引用的变量名
+        'Hisogical.Type': [Hisogical_Type_mapper[histologic_type]],
         'T': [T_mapper[t]],
-        'Liver.metastasis': [Liver.metastasis_mapper[liver_metastasis]],
+        'Liver.metastasis': [Liver_metastasis_mapper[liver_metastasis]],
         'Radiation': [Radiation_mapper[radiation]],
         'Chemotherapy': [Chemotherapy_mapper[chemotherapy]],
         'Marital.status': [Marital_status_mapper[marital_status]]
@@ -73,9 +76,10 @@ st.sidebar.write("Variables")
 age = st.sidebar.selectbox("Age", options=list(Age_mapper.keys()))  # 使用选择框
 sex = st.sidebar.selectbox("Sex", options=list(Sex_mapper.keys()))
 race = st.sidebar.selectbox("Race", options=list(Race_mapper.keys()))
-histologic_type = st.sidebar.selectbox("Histologic Type", options=list(Hisogical.Type_mapper.keys()))
+# 修改引用的变量名
+histologic_type = st.sidebar.selectbox("Histologic Type", options=list(Hisogical_Type_mapper.keys()))
 t = st.sidebar.selectbox("T", options=list(T_mapper.keys()))
-liver_metastasis = st.sidebar.selectbox("Liver metastasis", options=list(Liver.metastasis_mapper.keys()))
+liver_metastasis = st.sidebar.selectbox("Liver metastasis", options=list(Liver_metastasis_mapper.keys()))
 radiation = st.sidebar.selectbox("Radiation", options=list(Radiation_mapper.keys()))
 chemotherapy = st.sidebar.selectbox("Chemotherapy", options=list(Chemotherapy_mapper.keys()))
 marital_status = st.sidebar.selectbox("Marital status", options=list(Marital_status_mapper.keys()))
