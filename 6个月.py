@@ -13,42 +13,19 @@ X = train_data[['Age', 'Sex', 'Race', 'Hisogical.Type',
 y = train_data['Vital.status']
 
 # 处理缺失值和无穷大值
-# 检查 X 中是否存在缺失值
-if X.isnull().any().any():
-    X = X.dropna()
-    y = y[X.index]
+def handle_non_finite(data):
+    # 检查是否存在缺失值
+    if data.isnull().any().any():
+        data = data.dropna()
+    # 检查是否存在无穷大值
+    if np.isinf(data).any().any():
+        data = data.replace([np.inf, -np.inf], np.nan).dropna()
+    return data
 
-# 检查 y 中是否存在缺失值
-if y.isnull().any():
-    y = y.dropna()
-    X = X[y.index]
-
-# 检查 X 中是否存在无穷大的值
-if np.isinf(X).any().any():
-    X = X.replace([np.inf, -np.inf], np.nan)
-    X = X.dropna()
-    y = y[X.index]
-
-# 检查 y 中是否存在无穷大的值
-if np.isinf(y).any():
-    y = y.replace([np.inf, -np.inf], np.nan)
-    y = y.dropna()
-    X = X[y.index]
-
-# 检查数据类型
-print(X.dtypes)
-X = X.astype('float64')
-print(y.dtypes)
-y = y.astype('float64')
-
-# 创建并训练 Random Forest 模型
-rf_params = {
-    'n_estimators': 200,
-    'min_samples_split': 10,
-    'max_depth': 20
-}
-
-rf_model = RandomForestClassifier(**rf_params)
+X = handle_non_finite(X)
+y = y[X.index]  # 确保 y 和 X 的索引一致
+y = handle_non_finite(pd.DataFrame(y))
+X = X[y.index]  # 再次确保索引一致
 
 # 特征映射
 class_mapping = {0: "Alive", 1: "Dead"}
@@ -72,6 +49,23 @@ X['Liver.metastasis'] = X['Liver.metastasis'].map(Liver_metastasis_mapper)
 X['Radiation'] = X['Radiation'].map(Radiation_mapper)
 X['Chemotherapy'] = X['Chemotherapy'].map(Chemotherapy_mapper)
 X['Marital.status'] = X['Marital.status'].map(Marital_status_mapper)
+
+# 再次处理映射后可能出现的非有限值
+X = handle_non_finite(X)
+y = y[X.index]  # 确保 y 和 X 的索引一致
+
+# 检查数据类型
+X = X.astype('float64')
+y = y.astype('float64').squeeze()  # squeeze() 确保 y 是一维数组
+
+# 创建并训练 Random Forest 模型
+rf_params = {
+    'n_estimators': 200,
+    'min_samples_split': 10,
+    'max_depth': 20
+}
+
+rf_model = RandomForestClassifier(**rf_params)
 
 # 训练 Random Forest 模型
 rf_model.fit(X, y)
