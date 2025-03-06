@@ -1,7 +1,7 @@
 import pandas as pd
-import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 import streamlit as st
+import numpy as np
 
 # 读取训练集数据
 train_data = pd.read_csv('train_data.csv')
@@ -14,18 +14,16 @@ y = train_data['Vital.status']
 
 # 处理缺失值和无穷大值
 def handle_non_finite(data):
-    # 检查是否存在缺失值
     if data.isnull().any().any():
         data = data.dropna()
-    # 检查是否存在无穷大值
     if np.isinf(data).any().any():
         data = data.replace([np.inf, -np.inf], np.nan).dropna()
     return data
 
 X = handle_non_finite(X)
-y = y[X.index]  # 确保 y 和 X 的索引一致
+y = y[X.index]
 y = handle_non_finite(pd.DataFrame(y))
-X = X[y.index]  # 再次确保索引一致
+X = X[y.index]
 
 # 特征映射
 class_mapping = {0: "Alive", 1: "Dead"}
@@ -52,13 +50,13 @@ X['Marital.status'] = X['Marital.status'].map(Marital_status_mapper)
 
 # 再次处理映射后可能出现的非有限值
 X = handle_non_finite(X)
-y = y[X.index]  # 确保 y 和 X 的索引一致
+y = y[X.index]
 
 # 检查数据类型
 X = X.astype('float64')
-y = y.astype('float64').squeeze()  # squeeze() 确保 y 是一维数组
+y = y.astype('float64').squeeze()
 
-# 创建并训练 Random Forest 模型
+# 创建并训练Random Forest模型
 rf_params = {
     'n_estimators': 200,
     'min_samples_split': 10,
@@ -66,8 +64,6 @@ rf_params = {
 }
 
 rf_model = RandomForestClassifier(**rf_params)
-
-# 训练 Random Forest 模型
 rf_model.fit(X, y)
 
 # 预测函数
@@ -86,15 +82,15 @@ def predict_Vital_status(age, sex, race, histologic_type,
         'Marital.status': [Marital_status_mapper[marital_status]]
     })
     prediction = rf_model.predict(input_data)[0]
-    probability = rf_model.predict_proba(input_data)[0][1]  # 获取属于类别 1 的概率
+    probability = rf_model.predict_proba(input_data)[0][1]  # 获取属于类别1的概率
     class_label = class_mapping[prediction]
     return class_label, probability
 
-# 创建 Web 应用程序
-st.title("6 - month survival of NSCLC - BM patients based on Random Forest")
+# 创建Web应用程序
+st.title("6 - month survival of ECLM patients based on Random Forest")
 st.sidebar.write("Variables")
 
-age = st.sidebar.selectbox("Age", options=list(Age_mapper.keys()))  # 使用选择框
+age = st.sidebar.selectbox("Age", options=list(Age_mapper.keys()))
 sex = st.sidebar.selectbox("Sex", options=list(Sex_mapper.keys()))
 race = st.sidebar.selectbox("Race", options=list(Race_mapper.keys()))
 histologic_type = st.sidebar.selectbox("Histologic Type", options=list(Hisogical_Type_mapper.keys()))
